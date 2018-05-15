@@ -5,10 +5,6 @@
  */
 
 #include "RTClock.h"
-#include <Wire.h>
-//#include "RTClib.h"
-#include "Views.h"
-#include "utils.h"
 
 
 RTClock::RTClock(){
@@ -21,11 +17,11 @@ void RTClock::begin() {
 }
 
 void RTClock::viewInit(){
-  initBasicView("TIME");
-  ViewsText("-", DATE_INDENT+13*4, DATE_ROW, CLR_WHITE, CLR_BLACK, 2);
-  ViewsText("-", DATE_INDENT+13*7, DATE_ROW, CLR_WHITE, CLR_BLACK, 2);
-  ViewsText(":", TIME_INDENT+13*2, TIME_ROW, CLR_WHITE, CLR_BLACK, 2);
-  ViewsText(":", TIME_INDENT+13*5, TIME_ROW, CLR_WHITE, CLR_BLACK, 2);
+  this->init("TIME");
+  this->Text("-", DATE_INDENT+13*4, DATE_ROW, CLR_WHITE);
+  this->Text("-", DATE_INDENT+13*7, DATE_ROW, CLR_WHITE);
+  this->Text(":", TIME_INDENT+13*2, TIME_ROW, CLR_WHITE);
+  this->Text(":", TIME_INDENT+13*5, TIME_ROW, CLR_WHITE);
   sTime = {99, 99, 99};
   sDate = {0, 0, 0, 0};
   buffTime = {99, 99, 99};
@@ -84,7 +80,7 @@ void RTClock::viewUpdate(bool *bSet = false, byte bDigit = 0){
     case 6: strcpy(dayName, "Sambata"); break;
     default: strcpy(dayName, "Duminica"); break;    
   }
-  ViewsText(dayName,DATE_INDENT, DATE_ROW-20, CLR_WHITE, CLR_BLACK, 2, 3);
+  this->Text(dayName, DATE_INDENT, DATE_ROW-20, CLR_WHITE, 3);
   buffDate.d = sDate.d;
 }
 
@@ -92,21 +88,15 @@ void RTClock::printPart(byte *bBuff, byte iNow, int x, int y, bool yr = false) {
   if (*bBuff == iNow) return;
   char nr[5];
   sprintf(nr, yr ? "%04d" : "%02d" , yr ? 2000 + (int) bcdToDec(iNow) : bcdToDec(iNow));
-  ViewsText(nr, x, y, CLR_WHITE, CLR_BLACK, 2, yr ? 4 : 2);
+  this->Text(nr, x, y, CLR_WHITE, yr ? 4 : 2);
   *bBuff = iNow;
 }
 
 byte RTClock::setDigit(byte b, byte digit, int pos = 0) {
   int d = digit - '0';
-  Serial.print(d);
-  Serial.print("->");
-  Serial.print(pos);
-  Serial.print("->");
   if (pos == 0) {
-    Serial.println(d * 10 + bcdToDec(b)%10);
     return decToBcd(d * 10 + bcdToDec(b)%10);
   }
-  Serial.println(bcdToDec(b) - bcdToDec(b)%10 + d);
   return decToBcd(bcdToDec(b) - bcdToDec(b)%10 + d); 
 }
 

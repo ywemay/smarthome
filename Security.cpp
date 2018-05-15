@@ -13,7 +13,7 @@ String sRead, sReadBuff;  // I2C reading strings
 /**
  * Starts communication with security board.
  */
-void SecurityBegin(){
+void Security::begin(){
     #ifndef WIRE_BEGIN_CALLED //if not defined
     Wire.begin(); // will only call if it hasn't been called yet
     #endif
@@ -23,7 +23,7 @@ void SecurityBegin(){
 /**
  * Checks the data on security board
  */
-void SecurityCheck()
+void Security::check()
 {
   sRead = "";
   // put your main code here, to run repeatedly:
@@ -68,45 +68,45 @@ void SecurityCheck()
 /**
  * Switches the view to security display
  */
-void SecurityViewInit() 
+void Security::viewInit() 
 {
-  initBasicView("SECURITY");
+  this->init("SECURITY");
 }
 
 /**
  * Updates Security View.
  */
-void SecurityViewUpdate()
+void Security::viewUpdate()
 {
   if (!bSecurityViewRefresh) return;
 
   char msg[15];
-  char clr[8];
-  char bgclr[]="#000000";
+  byte clr;
+ 
   switch (sRead.charAt(0)) {
     case 'I':
-      strcpy(msg,"UNARMED"); strcpy(clr, "#888888");
+      strcpy(msg,"UNARMED"); clr = CLR_SILVER;
       break;
     case 'A':
-      strcpy(msg,"ARMED  "); strcpy(clr, "#00FF00");
+      strcpy(msg,"ARMED  "); clr = CLR_GREEN;
       break;
     default:
-      strcpy(msg,"ERROR  "); strcpy(clr, "#FF0000");
+      strcpy(msg,"ERROR  "); clr = CLR_RED;
       break;
   }
-  ViewsText(msg, LINDENT, ROW2_HIGH, clr, bgclr, 2);
+  this->Text(msg, LINDENT, ROW2_HIGH, clr);
 
   switch (sRead.charAt(1)) {
     case 'N':
-      strcpy(msg,"NO ALARM"); strcpy(clr, "#00FF00");
+      strcpy(msg,"NO ALARM"); clr = CLR_GREEN;
       break;
     case 'A':
-      strcpy(msg,"ALARM!!!"); strcpy(clr, "#FF0000");
+      strcpy(msg,"ALARM!!!"); clr = CLR_RED;
       break;
     default:
-      strcpy(msg,"ERROR  "); strcpy(clr, "#FF0000");
+      strcpy(msg,"ERROR  "); clr = CLR_RED;
       break;
   }
-  ViewsText(msg, LINDENT, ROW2_HIGH * 2, clr, bgclr, 2);
+  this->Text(msg, LINDENT, ROW2_HIGH * 2, clr);
 }
 

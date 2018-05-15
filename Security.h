@@ -1,9 +1,14 @@
 #ifndef H_SECURITY
 #define H_SECURITY
 
-void SecurityBegin();
-void SecurityCheck();
-void SecurityViewInit();
-void SecurityViewUpdate();
+#include "Views.h"
+
+class Security : public Views {
+  public:
+  void begin();
+  void check();
+  void viewInit();
+  void viewUpdate();
+};
 
 #endif

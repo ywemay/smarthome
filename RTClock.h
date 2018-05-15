@@ -2,6 +2,9 @@
 #define H_RTCLOCK
 
 #include <Arduino.h>
+#include <Wire.h>
+#include "Views.h"
+#include "utils.h"
 
 #define DATE_INDENT LINDENT+10
 #define TIME_INDENT LINDENT+15
@@ -28,7 +31,7 @@ void RTClockViewUpdate();
 void RTClockPrintPart(byte *bBuff, byte iNow, int x, int y, bool yr = false);
 */
 
-class RTClock {
+class RTClock : public Views {
   private:
     byte setPos = 0;
     void printPart(byte *bBuff, byte iNow, int x, int y, bool yr = false);

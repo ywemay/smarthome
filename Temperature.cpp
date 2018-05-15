@@ -17,7 +17,7 @@ struct
 /**
  * Get temperature by Sensor ID
  */
-float getTempByID(uint8_t id)
+float Temperature::getTempByID(uint8_t id)
 {
   for (uint8_t index = 0; index < deviceCount; index++)
   {
@@ -32,7 +32,7 @@ float getTempByID(uint8_t id)
 /**
  * Temperature function
  */
-void sensorsSetup(){
+void Temperature::sensorsSetup(){
   sensors.begin();
   // count devices
   deviceCount = sensors.getDeviceCount();
@@ -49,29 +49,29 @@ void sensorsSetup(){
 /**
  * Temperature View Mode 1:
  */
-void TemperatureView1Init() 
+void Temperature::view1Init() 
 {
   char ttl[8] = {'T', 'E', 'M' , 'P', ' ', (char) 247, 'C'};
-  initBasicView(ttl);
+  this->init(ttl);
 }
 
-void drawTemp(uint8_t row, uint8_t col, uint8_t id) {
+void Temperature::drawTemp(uint8_t row, uint8_t col, uint8_t id) {
   int iTemp = getTempByID(id);
-  char clr[8];
+  byte clr;
   if (iTemp > 30) {
-    strcpy(clr, "#FF0000");
+    clr = CLR_RED;
   }
   else if (iTemp > 15) {
-    strcpy(clr, "#FFCC00");
+    clr = CLR_YELLOW;
   }  
   else if (iTemp > 8) {
-    strcpy(clr, "#00FF00");
+    clr = CLR_SILVER;
   }
   else if (iTemp > 0) {
-    strcpy(clr, "#00CCFF");
+    clr = CLR_WHITE;
   }
   else {
-    strcpy(clr, "#0000FF");
+    clr = CLR_BLUE;
   }
 
   char tmp[6];
@@ -80,12 +80,12 @@ void drawTemp(uint8_t row, uint8_t col, uint8_t id) {
   if(iTemp == -999) sT = "ERR"; 
   sT.toCharArray(tmp, 6);
   //strcpy(tmp, 0xF8 + 'C');
-  ViewsText(tmp, col * COL_WIDTH + LINDENT, row * ROW2_HIGH + TINDENT, clr);
+  this->Text(tmp, col * COL_WIDTH + LINDENT, row * ROW2_HIGH + TINDENT, clr);
 }
 
-void TemperatureView1Update() {
+void Temperature::view1Update() {
   sensors.requestTemperatures();
-  drawTemp(1, 0, 201);
+  this->drawTemp(1, 0, 201);
   drawTemp(2, 0, 202);
   drawTemp(3, 0, 203);
 }

@@ -3,6 +3,7 @@
 
 #include <TFT.h>  // Display library
 #include <SPI.h>  // TODO: Clarify...
+#include "utils.h"
 
 // TFT
 #define cs   10
@@ -16,18 +17,29 @@
 #define LINDENT  5
 #define TINDENT  3
 
-#define CLR_WHITE "#FFFFFF"
-#define CLR_BLACK "#000000"
-#define CLR_RED "#FF0000"
-#define CLR_GREEN "#00FF00"
-#define CLR_BLUE "#0000FF"
-#define CLR_YELLOW "#FFCC00"
+#define CLR_BLACK   0x00
+#define CLR_RED     0x01
+#define CLR_GREEN   0x02
+#define CLR_BLUE    0x03
+#define CLR_YELLOW  0x04
+#define CLR_SILVER  0x05
+#define CLR_WHITE   0x06
 
 
-void ViewsBegin();
-void initBasicView(char * title);
-void Color2RGB(char * clr, int *rgb);
-void ViewsText(char * text, int x, int y, char * clr, char * bgclr = CLR_BLACK, int sz=1, int ln=0);
-void ViewsBar(int x, int y, int l, int h, char *clr = CLR_BLACK);
+
+class Views {
+  private:
+    unsigned int textSize;
+  public:
+    Views();
+    void begin();
+    void init(char * title);
+    void setTextSize(int sz);
+    void SetEraseColor();
+    void SetTextColor(byte clr);
+    TColor getRGB(byte clr);
+    void Text(char * text, int x, int y, byte clr = CLR_WHITE, int ln = 0);
+    void Bar(int x, int y, int l, int h, byte clr = CLR_BLACK);
+};
 
 #endif
