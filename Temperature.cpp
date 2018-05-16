@@ -77,10 +77,13 @@ void Temperature::drawTemp(uint8_t row, uint8_t col, uint8_t id) {
   char tmp[6];
   String sT = String("");
   sT += iTemp;
-  if(iTemp == -999) sT = "ERR"; 
+  if(iTemp == -999)  {
+    sT = "ERR"; 
+    clr = CLR_RED;
+  }
   sT.toCharArray(tmp, 6);
   //strcpy(tmp, 0xF8 + 'C');
-  this->Text(tmp, col * COL_WIDTH + LINDENT, row * ROW2_HIGH + TINDENT, clr);
+  this->TextRow2(tmp, clr, col, row);
 }
 
 void Temperature::view1Update() {

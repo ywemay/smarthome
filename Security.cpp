@@ -94,7 +94,7 @@ void Security::viewUpdate()
       strcpy(msg,"ERROR  "); clr = CLR_RED;
       break;
   }
-  this->Text(msg, LINDENT, ROW2_HIGH, clr);
+  this->TextRow2(msg, clr, 0, 1);
 
   switch (sRead.charAt(1)) {
     case 'N':
@@ -107,6 +107,6 @@ void Security::viewUpdate()
       strcpy(msg,"ERROR  "); clr = CLR_RED;
       break;
   }
-  this->Text(msg, LINDENT, ROW2_HIGH * 2, clr);
+  this->TextRow2(msg, clr, 0, 2);
 }
 

@@ -12,10 +12,10 @@
 
 // Views:
 #define ROW_HIGH  6
-#define ROW2_HIGH  ROW_HIGH * 2
+#define ROW2_HIGH  18
 #define COL_WIDTH 30
 #define LINDENT  5
-#define TINDENT  3
+#define TINDENT  5
 
 #define CLR_BLACK   0x00
 #define CLR_RED     0x01
@@ -29,16 +29,19 @@
 
 class Views {
   private:
-    unsigned int textSize;
+    unsigned int textSize = 1;
+    
   public:
+    bool done = false;
     Views();
     void begin();
     void init(char * title);
     void setTextSize(int sz);
     void SetEraseColor();
-    void SetTextColor(byte clr);
+    void SetTextColor(byte cl0r);
     TColor getRGB(byte clr);
     void Text(char * text, int x, int y, byte clr = CLR_WHITE, int ln = 0);
+    void TextRow2(char * text, byte clr, int row, int col = 0, int ln=0);
     void Bar(int x, int y, int l, int h, byte clr = CLR_BLACK);
 };
 

@@ -15,6 +15,7 @@
 #include "Temperature.h"
 #include "Views.h"
 #include "Security.h"
+#include "Settings.h"
 #include "RTClock.h"
 
 
@@ -32,6 +33,7 @@ RTClock rtc = RTClock();
 Views views = Views();
 Temperature temp = Temperature();
 Security sec= Security();
+Settings set = Settings();
 
 bool bSetMode = false;
 bool bAccess = false;
@@ -72,12 +74,20 @@ void setup() {
  * Main loop
  */
 void loop() {
-  //sec.check();
+  sec.check();
   if (bReadKey) {
     readKey();
     bReadKey = false;
   }
-   if (displayModeBuff != displayMode) 
+   
+  updateViewModes();
+  delay(1000);
+}
+
+void updateViewModes() {
+  if (bSetMode) return;
+  
+  if (displayModeBuff != displayMode) 
   {
     if(displayMode == 1) {
       temp.view1Init();
@@ -100,9 +110,7 @@ void loop() {
   else {
     sec.viewUpdate();
   }
-  delay(1000);
 }
-
 /**
  * Reads data from keyboard when intterrup on pin 2
  */
@@ -126,15 +134,20 @@ void readKey() {
   }
   
   int iKey = chRd[1] - '0';
-  Serial.println(iKey);
+  
   // If long keyboard press;
   if (chRd[0] == 'L' && chRd[1] == '#' ) {
-    if (bSetMode) {
-      bSetMode = false;
-      displayMode = 0;
+    if (!bSetMode) {
+      bSetMode = true;
+      set.done = false;
     }
-    else if (!bAccess) {
-      displayMode = 20; // password mode
+  }
+  if (bSetMode) {
+    set.show(chRd[1]);
+    if (set.done) {
+      displayMode = 0;
+      bSetMode = false;
+      displayModeBuff = -1; // to force reinitiation of view
     }
   }
   else if (iKey < 3 && iKey >= 0){

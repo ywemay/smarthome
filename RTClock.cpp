@@ -22,10 +22,8 @@ void RTClock::viewInit(){
   this->Text("-", DATE_INDENT+13*7, DATE_ROW, CLR_WHITE);
   this->Text(":", TIME_INDENT+13*2, TIME_ROW, CLR_WHITE);
   this->Text(":", TIME_INDENT+13*5, TIME_ROW, CLR_WHITE);
-  sTime = {99, 99, 99};
-  sDate = {0, 0, 0, 0};
-  buffTime = {99, 99, 99};
-  buffDate = {0, 0, 0, 0};
+  sTime = {99, 99, 99, 0, 0, 0, 0};
+  this->updateTime();
 }
 
 void RTClock::read(){
@@ -41,37 +39,40 @@ void RTClock::read(){
     i++;
   }
 
-  sTime = {sRd[2], sRd[1], sRd[0]};
-  sDate = {sRd[6], sRd[5], sRd[4], sRd[3]};
+  sTime = {sRd[0], sRd[1], sRd[2], sRd[3], sRd[4], sRd[5], sRd[6]};
 }
 
-void RTClock::viewUpdate(bool *bSet = false, byte bDigit = 0){
-  //DateTime now = rtc.now();
-  char dt[5];
-  byte chWidth = 13;
+void RTClock::updateSetView(byte bDigit){
+  if (bDigit == '#') {
+    // apply changes
+  } 
+  // decreace set position
+  if (bDigit == '*') {
+    if (this->setPos > 0) this->setPos--;
+  }
+  else if (bDigit - '0' >=0 && bDigit - '0' <= 9) {
+    this->setAtCurrPos(bDigit);
+  }
+  this->updateTime();
+}
 
-  if (!*bSet || sDate.m == 0) {
-    if (sDate.m == 0) this->setPos = 0;
-    this->read();
-  }
-  else if (*bSet) {
-    if (bDigit == '#') {
-      *bSet = false;
-    } else if (bDigit != '*') {
-      this->setAtCurrPos(bDigit);
-    }
-  }
-  
+void RTClock::viewUpdate(){
+  this->read();
+  this->updateTime();
+}
+
+void RTClock::updateTime(){
+  const byte chWidth = 13;
   this->printPart(&buffTime.h, sTime.h, TIME_INDENT, TIME_ROW);
-  this->printPart(&buffTime.m, sTime.m, TIME_INDENT+chWidth*3, TIME_ROW);
+  this->printPart(&buffTime.i, sTime.i, TIME_INDENT+chWidth*3, TIME_ROW);
   this->printPart(&buffTime.s, sTime.s, TIME_INDENT+chWidth*6, TIME_ROW);
-  this->printPart(&buffDate.y, sDate.y, DATE_INDENT, DATE_ROW, true);
-  this->printPart(&buffDate.m, sDate.m, DATE_INDENT+chWidth*5, DATE_ROW);
-  this->printPart(&buffDate.dt, sDate.dt, DATE_INDENT+chWidth*8, DATE_ROW);
+  this->printPart(&buffTime.y, sTime.y, DATE_INDENT, DATE_ROW, true);
+  this->printPart(&buffTime.m, sTime.m, DATE_INDENT+chWidth*5, DATE_ROW);
+  this->printPart(&buffTime.dt, sTime.dt, DATE_INDENT+chWidth*8, DATE_ROW);
 
-  if (buffDate.d == sDate.d) return;
+  if (buffTime.d == sTime.d) return;
   char dayName[10];
-  switch (bcdToDec(sDate.d)) {
+  switch (bcdToDec(sTime.d)) {
     case 1: strcpy(dayName, "Luni"); break;
     case 2: strcpy(dayName, "Marti"); break;
     case 3: strcpy(dayName, "Miercuri"); break;
@@ -80,8 +81,8 @@ void RTClock::viewUpdate(bool *bSet = false, byte bDigit = 0){
     case 6: strcpy(dayName, "Sambata"); break;
     default: strcpy(dayName, "Duminica"); break;    
   }
-  this->Text(dayName, DATE_INDENT, DATE_ROW-20, CLR_WHITE, 3);
-  buffDate.d = sDate.d;
+  this->Text(dayName, DATE_INDENT, DATE_ROW-20, CLR_WHITE, 10);
+  buffTime.d = sTime.d;
 }
 
 void RTClock::printPart(byte *bBuff, byte iNow, int x, int y, bool yr = false) {
@@ -92,35 +93,61 @@ void RTClock::printPart(byte *bBuff, byte iNow, int x, int y, bool yr = false) {
   *bBuff = iNow;
 }
 
-byte RTClock::setDigit(byte b, byte digit, int pos = 0) {
+bool RTClock::setDigit(byte *b, byte digit, byte bMax, byte bMin = 0x00) {
   int d = digit - '0';
-  if (pos == 0) {
-    return decToBcd(d * 10 + bcdToDec(b)%10);
+  byte rez;
+  if (this->setPos%2 == 0) {
+    rez = decToBcd(d * 10 + bcdToDec(*b)%10);
+  } else {
+    rez = decToBcd(bcdToDec(b) - bcdToDec(*b)%10 + d);
+  } 
+  // limit to maximum to set
+  if (rez >= bMin && rez <= bMax) {
+    *b = rez;
+    this->setPos++;
+    return true;
   }
-  return decToBcd(bcdToDec(b) - bcdToDec(b)%10 + d); 
+  return false;
 }
 
 void RTClock::setAtCurrPos(byte bDigit){
   switch(this->setPos/2){
     case 0:
-      this->sDate.y = this->setDigit(this->sDate.y, bDigit, this->setPos%2);
+      this->setDigit(&this->sTime.y, bDigit, decToBcd(99));
       break;
     case 1:
-      this->sDate.m = this->setDigit(this->sDate.m, bDigit, this->setPos%2);
+      this->setDigit(&this->sTime.m, bDigit, decToBcd(12), 0x01);
       break;
     case 2:
-      this->sDate.dt = this->setDigit(this->sDate.dt, bDigit, this->setPos%2);
+      this->setDigit(&this->sTime.dt, bDigit, this->getNrOfDays(this->sTime.y, this->sTime.m), 0x01);
       break;
     case 3:
-      this->sTime.h = this->setDigit(this->sTime.h, bDigit, this->setPos%2);
+      this->setDigit(&this->sTime.h, bDigit, decToBcd(23));
       break;
     case 4:
-      this->sTime.m = this->setDigit(this->sTime.m, bDigit, this->setPos%2);
+      this->setDigit(&this->sTime.i, bDigit, decToBcd(59));
       break;
     case 5:
-      this->sTime.s = this->setDigit(this->sTime.s, bDigit, this->setPos%2);
+      this->setDigit(&this->sTime.s, bDigit, decToBcd(59));
       break;
   }
-  this->setPos++;
-  if (this->setPos > 11) this->setPos = 0;
+}
+
+byte RTClock::getNrOfDays(byte by, byte bm) {
+  int y = bcdToDec(by);
+  int m = bcdToDec(bm);
+  if (m == 4 || m == 6 || m == 9 || m == 11)
+    return decToBcd(30);
+    
+  else if (m == 2)
+  {
+    bool leapyear = (y % 4 == 0 && y % 100 != 0) || (y % 400 == 0);
+
+    if (leapyear == 0)
+        return decToBcd(28);
+    else 
+        return decToBcd(29);
+  }
+
+  return decToBcd(31);  
 }
