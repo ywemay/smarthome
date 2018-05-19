@@ -30,20 +30,22 @@ void RTClockPrintPart(byte *bBuff, byte iNow, int x, int y, bool yr = false);
 
 class RTClock : public Views {
   private:
-    byte setPos = 0;
     void printPart(byte *bBuff, byte iNow, int x, int y, bool yr = false);
     STime buffTime;
     STime sTime;
     void read();
     bool setDigit(byte *b, byte digit, byte bMax, byte bMin = 0x00 );
-    void setAtCurrPos(byte bDigit);
+    //void setAtCurrPos(byte bDigit);
     void updateTime();
+    void underlinePosition(byte clr = CLR_YELLOW);
   public:
+    byte setPos = 0;
     RTClock();
+    bool done = false; // indicates when changes are done
     void begin();
     void viewInit();
     void viewUpdate();
-    byte getNrOfDays(byte by, byte bm);
+    //byte getNrOfDays(byte by, byte bm);
     void updateSetView(byte bDigit);
 };
 

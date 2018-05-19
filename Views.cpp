@@ -70,10 +70,16 @@ void Views::TextRow2(char * text, byte clr, int col = 0, int row,  int ln=0){
   this->Text(text, col * COL_WIDTH + LINDENT, row * ROW2_HIGH + TINDENT,   clr, ln);
 }
 
+void Views::TextRow(char * text, byte clr, int col = 0, int row,  int ln=0){
+  this->setTextSize(1);
+  this->Text(text, col * COL_WIDTH + LINDENT, row * ROW_HIGH + TINDENT,   clr, ln);
+}
+
+
 void Views::Bar(int x, int y, int l, int h, byte clr = CLR_BLACK) {
   TColor c = this->getRGB(clr);
-  TFTscreen.stroke(c.r, c.g, c.b);
-  TFTscreen.fill(c.r, c.g, c.b);
+  TFTscreen.stroke(c.b, c.g, c.r);
+  TFTscreen.fill(c.b, c.g, c.r);
   TFTscreen.rect(x, y, l, h);
 }
 

@@ -44,11 +44,20 @@ void RTClock::read(){
 
 void RTClock::updateSetView(byte bDigit){
   if (bDigit == '#') {
-    // apply changes
+    if (this->setPos < 12) {
+      this->underlinePosition(CLR_BLACK);
+      this->setPos++; 
+      this->underlinePosition();
+    }
+    else {
+      this->done = true;
+    }
   } 
   // decreace set position
   if (bDigit == '*') {
+    this->underlinePosition(CLR_BLACK);
     if (this->setPos > 0) this->setPos--;
+    this->underlinePosition();
   }
   else if (bDigit - '0' >=0 && bDigit - '0' <= 9) {
     this->setAtCurrPos(bDigit);
@@ -109,7 +118,7 @@ bool RTClock::setDigit(byte *b, byte digit, byte bMax, byte bMin = 0x00) {
   }
   return false;
 }
-
+/*
 void RTClock::setAtCurrPos(byte bDigit){
   switch(this->setPos/2){
     case 0:
@@ -150,4 +159,4 @@ byte RTClock::getNrOfDays(byte by, byte bm) {
   }
 
   return decToBcd(31);  
-}
+}*/

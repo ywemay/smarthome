@@ -11,7 +11,7 @@
 #define rst  8
 
 // Views:
-#define ROW_HIGH  6
+#define ROW_HIGH  9
 #define ROW2_HIGH  18
 #define COL_WIDTH 30
 #define LINDENT  5
@@ -42,6 +42,7 @@ class Views {
     TColor getRGB(byte clr);
     void Text(char * text, int x, int y, byte clr = CLR_WHITE, int ln = 0);
     void TextRow2(char * text, byte clr, int row, int col = 0, int ln=0);
+    void TextRow(char * text, byte clr, int row, int col = 0, int ln=0);
     void Bar(int x, int y, int l, int h, byte clr = CLR_BLACK);
 };
 
