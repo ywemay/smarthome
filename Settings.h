@@ -27,7 +27,9 @@ class Settings : public Views {
     char buff[14];             // A buffer to read user input into
     char buff2[14];
     void getDateForm();
+    void changePassForm();
     void SetClock();
+    void SetPassword();
     
     int getNrOfDays();
   public:

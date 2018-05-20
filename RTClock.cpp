@@ -22,10 +22,11 @@ void RTClock::viewInit(){
   this->Text("-", DATE_INDENT+13*7, DATE_ROW, CLR_WHITE);
   this->Text(":", TIME_INDENT+13*2, TIME_ROW, CLR_WHITE);
   this->Text(":", TIME_INDENT+13*5, TIME_ROW, CLR_WHITE);
-  sTime = {99, 99, 99, 0, 0, 0, 0};
+  // sTime = {99, 99, 99, 0, 0, 0, 0};
+  this->dtBuff = DateTime();
   this->updateTime();
 }
-
+/*
 void RTClock::read(){
   Wire.beginTransmission(0x68);
   Wire.write((uint8_t) 0x00);
@@ -41,36 +42,48 @@ void RTClock::read(){
 
   sTime = {sRd[0], sRd[1], sRd[2], sRd[3], sRd[4], sRd[5], sRd[6]};
 }
-
-void RTClock::updateSetView(byte bDigit){
-  if (bDigit == '#') {
-    if (this->setPos < 12) {
-      this->underlinePosition(CLR_BLACK);
-      this->setPos++; 
-      this->underlinePosition();
-    }
-    else {
-      this->done = true;
-    }
-  } 
-  // decreace set position
-  if (bDigit == '*') {
-    this->underlinePosition(CLR_BLACK);
-    if (this->setPos > 0) this->setPos--;
-    this->underlinePosition();
-  }
-  else if (bDigit - '0' >=0 && bDigit - '0' <= 9) {
-    this->setAtCurrPos(bDigit);
-  }
-  this->updateTime();
-}
+*/
 
 void RTClock::viewUpdate(){
-  this->read();
+  //this->read();
   this->updateTime();
 }
 
 void RTClock::updateTime(){
+  const byte chWidth = 13;
+  DateTime dtNow = this->now();
+  this->printPart(this->dtBuff.hour(), dtNow.hour(), TIME_INDENT, TIME_ROW);
+  this->printPart(this->dtBuff.minute(), dtNow.minute(), TIME_INDENT+chWidth*3, TIME_ROW);
+  this->printPart(this->dtBuff.second(), dtNow.second(), TIME_INDENT+chWidth*6, TIME_ROW);
+  this->printPart(this->dtBuff.year(), dtNow.year(), DATE_INDENT, DATE_ROW, true);
+  this->printPart(this->dtBuff.month(), dtNow.month(), DATE_INDENT+chWidth*5, DATE_ROW);
+  this->printPart(this->dtBuff.day(), dtNow.day(), DATE_INDENT+chWidth*8, DATE_ROW);
+
+  if (this->dtBuff.dayOfWeek() != dtNow.dayOfWeek()) {
+    char dayName[10];
+    switch (dtNow.dayOfWeek()) {
+      case 1: strcpy(dayName, "Luni"); break;
+      case 2: strcpy(dayName, "Marti"); break;
+      case 3: strcpy(dayName, "Miercuri"); break;
+      case 4: strcpy(dayName, "Joi"); break;
+      case 5: strcpy(dayName, "Vineri"); break;
+      case 6: strcpy(dayName, "Sambata"); break;
+      default: strcpy(dayName, "Duminica"); break;    
+    }
+    this->Text(dayName, DATE_INDENT, DATE_ROW-20, CLR_WHITE, 10);
+  }
+  this->dtBuff = dtNow;
+  //
+  /*
+  const byte chWidth = 13;
+  this->printPart(&buffTime.h, sTime.h, TIME_INDENT, TIME_ROW);
+  this->printPart(&buffTime.i, sTime.i, TIME_INDENT+chWidth*3, TIME_ROW);
+  this->printPart(&buffTime.s, sTime.s, TIME_INDENT+chWidth*6, TIME_ROW);
+  this->printPart(&buffTime.y, sTime.y, DATE_INDENT, DATE_ROW, true);
+  this->printPart(&buffTime.m, sTime.m, DATE_INDENT+chWidth*5, DATE_ROW);
+  this->printPart(&buffTime.dt, sTime.dt, DATE_INDENT+chWidth*8, DATE_ROW);
+  
+  /*
   const byte chWidth = 13;
   this->printPart(&buffTime.h, sTime.h, TIME_INDENT, TIME_ROW);
   this->printPart(&buffTime.i, sTime.i, TIME_INDENT+chWidth*3, TIME_ROW);
@@ -92,32 +105,16 @@ void RTClock::updateTime(){
   }
   this->Text(dayName, DATE_INDENT, DATE_ROW-20, CLR_WHITE, 10);
   buffTime.d = sTime.d;
+  */
 }
 
-void RTClock::printPart(byte *bBuff, byte iNow, int x, int y, bool yr = false) {
-  if (*bBuff == iNow) return;
+void RTClock::printPart(int iBuff, int iNow, int x, int y, bool yr = false) {
+  if (iBuff == iNow) return;
   char nr[5];
-  sprintf(nr, yr ? "%04d" : "%02d" , yr ? 2000 + (int) bcdToDec(iNow) : bcdToDec(iNow));
+  sprintf(nr, yr ? "%04d" : "%02d" , iNow);
   this->Text(nr, x, y, CLR_WHITE, yr ? 4 : 2);
-  *bBuff = iNow;
 }
 
-bool RTClock::setDigit(byte *b, byte digit, byte bMax, byte bMin = 0x00) {
-  int d = digit - '0';
-  byte rez;
-  if (this->setPos%2 == 0) {
-    rez = decToBcd(d * 10 + bcdToDec(*b)%10);
-  } else {
-    rez = decToBcd(bcdToDec(b) - bcdToDec(*b)%10 + d);
-  } 
-  // limit to maximum to set
-  if (rez >= bMin && rez <= bMax) {
-    *b = rez;
-    this->setPos++;
-    return true;
-  }
-  return false;
-}
 /*
 void RTClock::setAtCurrPos(byte bDigit){
   switch(this->setPos/2){

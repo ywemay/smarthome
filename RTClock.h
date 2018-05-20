@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include <RTClib.h>
 #include "Views.h"
 #include "utils.h"
 
@@ -11,6 +12,7 @@
 #define DATE_ROW ROW2_HIGH * 3
 #define TIME_ROW ROW2_HIGH * 4
 
+/*
 struct STime {
   byte s;
   byte i;
@@ -28,16 +30,17 @@ void RTClockViewUpdate();
 void RTClockPrintPart(byte *bBuff, byte iNow, int x, int y, bool yr = false);
 */
 
-class RTClock : public Views {
+class RTClock : public Views, public DS1307 {
   private:
-    void printPart(byte *bBuff, byte iNow, int x, int y, bool yr = false);
-    STime buffTime;
-    STime sTime;
-    void read();
+    DateTime dtBuff;
+    void printPart(int iBuff, int iNow, int x, int y, bool yr = false);
+    //STime buffTime;
+    //STime sTime;
+    //void read();
     bool setDigit(byte *b, byte digit, byte bMax, byte bMin = 0x00 );
     //void setAtCurrPos(byte bDigit);
     void updateTime();
-    void underlinePosition(byte clr = CLR_YELLOW);
+    //void underlinePosition(byte clr = CLR_YELLOW);
   public:
     byte setPos = 0;
     RTClock();

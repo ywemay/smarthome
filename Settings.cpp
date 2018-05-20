@@ -25,6 +25,7 @@ void Settings::passwordForm(){
     this->init("Parola:");
     this->done = false;
     this->isInit = true;
+    this->access = false;
     return;
   }
   if (this->keysRead < 4 && bKey - '0' >=0 && bKey - '0' <=9) {
@@ -66,10 +67,10 @@ void Settings::passwordForm(){
 }
 
 void Settings::showProcessing() {
-  
   switch(this->page) {
     case 0: this->getMainMenu(); break;
     case 1: this->getDateForm(); break;
+    case 2: this->changePassForm(); break;
   }
 }
 
@@ -88,7 +89,7 @@ void Settings::getMainMenu() {
     return;
   }
   // Process user choise:
-  if (bKey - '0' >=1 && bKey - '0' <=3) {
+  if (bKey - '0' >=1 && bKey - '0' <=2) {
     this->page = bKey - '0';
     //Serial.println(this->page);
     this->isInit = false;
@@ -98,9 +99,8 @@ void Settings::getMainMenu() {
   }
   if (!this->isInit) {
     this->init("SETARI");
-    this->TextRow2("1 Data", CLR_WHITE, 0, i++);
-    this->TextRow2("2 Ora", CLR_WHITE, 0, i++);
-    this->TextRow2("3 Parola", CLR_WHITE, 0, i++);
+    this->TextRow2("1 Data/Ora", CLR_WHITE, 0, i++);
+    this->TextRow2("2 Parola", CLR_WHITE, 0, i++);
     this->TextRow2("* Anulare", CLR_WHITE, 0, i); 
     this->isInit = true;
   }
@@ -257,3 +257,71 @@ void Settings::SetClock(){
   DateTime dt = DateTime (sDate, this->buff2);
   ds.adjust(dt);
 }
+
+void Settings::changePassForm(){
+  if (!this->isInit) {
+    this->init("SET PASS");
+    this->TextRow("Parola noua:", CLR_SILVER, 0, 3);
+    this->TextRow("Repeta:", CLR_SILVER, 0, 7);
+    this->isInit = true;
+    this->keysRead = 0;
+    strcpy(this->buff, "_");
+    strcpy(this->buff2, "");
+    this->TextRow2(this->buff, CLR_WHITE, 0, 2, 4);
+  }
+  
+  if (bKey == '*') {
+    this->isInit = false;
+    this->page = 0;
+    this->bKey = 'I';
+    this->showProcessing();
+    return;
+  }
+  if (bKey == '#') {
+    if (this->keysRead >= 8) {
+      this->SetPassword();
+      return;
+    }
+    else this->TextRow("Not ready...", CLR_RED, 0, 11);
+  }
+  
+  if (bKey - '0' >= 0 && bKey - '0' <= 9) {
+    char strAst[5] = "";
+    if(this->keysRead <= 3) {
+      this->buff[this->keysRead] = bKey;
+      this->keysRead++;
+      memset(strAst, '*', this->keysRead);
+      this->TextRow2(strAst, CLR_WHITE, 0, 2, 7);
+    }
+    else if (this->keysRead <= 7){
+      this->buff2[this->keysRead-4] = bKey;
+      this->keysRead++;
+      memset(strAst, '*', this->keysRead-4);
+      this->TextRow2(strAst, CLR_WHITE, 0, 4, 7);
+    }
+    if (this->keysRead == 8){
+      if (memcmp(this->buff, this->buff2, 4) != 0) {
+        this->TextRow("Nu corespund. Repeta.", CLR_RED, 0, 11, 20);
+        this->isInit = false;
+        this->bKey = 'I';
+        this->showProcessing();
+        return;
+      }
+      else this->TextRow("# Pentu memorizare.", CLR_GREEN, 0, 11, 20);
+    }
+  }
+}
+
+void Settings::SetPassword(){
+  for(int i = 0; i<4; i++) this->pass[i] = this->buff[i];
+  this->keysRead = 0;
+  this->pass[4] = '\0';
+  EEPROM.put(0, this->pass);
+  this->TextRow("Success!", CLR_GREEN, 0, 11, 20);
+  delay(1000);
+  strcpy(this->pass, "");
+  this->isInit = false;
+  this->done = true;
+  this->access = false;
+}
+
